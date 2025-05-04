@@ -178,6 +178,7 @@ cython_debug/
 *.m~
 *.mex*
 *.mat
+*.mix
 *.fig
 *.slprj/
 *.slx
