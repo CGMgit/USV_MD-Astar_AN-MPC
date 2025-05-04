@@ -172,3 +172,22 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# === MATLAB-specific ignores ===
+*.asv
+*.m~
+*.mex*
+*.mat
+*.fig
+*.slprj/
+*.slx
+*.mdl
+*.autosave
+*.mlappinstall
+*.mlapp
+*.prj
+*.mexw64
+*.mexmaci64
+*.mexa64
+*.sdf
+*.user.mat
