@@ -1,0 +1,40 @@
+# 自动缩进 LaTeX 配置文件
+
+# 是否缩进导言区
+indentPreamble: 1
+
+# 定义哪些环境应缩进
+indentRules:
+  itemize:
+    indentAfterThis: 1
+  enumerate:
+    indentAfterThis: 1
+  description:
+    indentAfterThis: 1
+  tabbing:
+    indentAfterThis: 1
+  tabular:
+    indentAfterThis: 1
+  align:
+    indentAfterThis: 1
+
+# 缩进单位：两个空格（推荐，视觉上清晰且格式稳定）
+tab: "  "
+
+# 控制右括号是否单独一行（0为不换行）
+lookForAlignDelims: 0
+
+# 控制是否自动对齐等号或 & 符号等环境（适用于 equation, align）
+modifyLineBreaks:
+  textWrapOptions:
+    columns: 100
+
+# 是否保留注释对齐
+trailingComments: 1
+
+# 控制 \section 等是否缩进（0 表示不缩进）
+section:
+  indentation: 0
+
+# 强制行尾保留换行（避免一行太长）
+preserveBlankLines: 1
