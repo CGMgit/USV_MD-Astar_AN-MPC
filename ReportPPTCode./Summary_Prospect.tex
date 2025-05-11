@@ -1,0 +1,44 @@
+\section{研究总结与展望}
+
+% 第1页：研究总结与未来工作
+\begin{frame}{研究总结与未来工作}
+\justifying
+本研究构建了一个面向水面无人艇（USV）的三层路径规划与控制框架，涵盖：
+
+\begin{itemize}
+    \item MD-A* 全局路径规划：结合欧几里得距离与绕行代价的启发式设计；
+    \item AN-MPC 局部轨迹控制：基于 Fossen 模型实现动态误差调节与扰动补偿；
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{后续工作展望：}
+\begin{itemize}
+    \item 引入多智能体强化学习（MASAC），提升动态障碍规避与协同能力；
+    \item 构建强化学习-AN-MPC–MD-A* 联动机制，实现路径规划与控制策略的融合调度；
+    \item 拓展系统至真实海洋任务部署，探索稳定性与鲁棒性进一步提升路径。
+\end{itemize}
+\end{frame}
+
+% 第2页：项目仓库链接（附录B3）
+\begin{frame}{项目仓库链接说明}
+\justifying
+为提升本课题的可复现性与模块化可维护性，作者已将路径规划与控制器模块整理上传至 GitHub，涵盖核心代码、地图数据与实验图像。
+
+\vspace{0.8em}
+\textbf{项目地址：}
+\begin{center}
+\texttt{https://github.com/CGMgit/USV-MD-Astar-ANMPC}
+\end{center}
+
+\vspace{0.5em}
+\textbf{仓库内容包括：}
+\begin{itemize}
+    \item \texttt{code/}：MD-A* 与 AN-MPC 实现代码；
+    \item \texttt{data/}：仿真地图、节点点位与障碍数据；
+    \item \texttt{figures/}：论文与答辩所用实验图；
+    \item \texttt{README.md}：项目说明与复现指南。
+\end{itemize}
+
+\vspace{0.5em}
+项目将在答辩结束后正式开源，欢迎交流与合作。
+\end{frame}

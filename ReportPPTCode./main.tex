@@ -1,0 +1,57 @@
+\documentclass{beamer}
+
+% 中文与英文字体设置（增强稳定性）
+\usepackage{xeCJK}
+\usepackage{fontspec}
+
+% 主体字体：宋体 + Times + 微软雅黑
+\setmainfont{Times New Roman}
+\setsansfont{Times New Roman}
+\setmonofont{Courier New}
+
+\setCJKmainfont{SimSun}
+\setCJKsansfont{Microsoft YaHei}  % 更稳定的无衬线字体，支持加粗
+
+% 标题字体美化
+\setbeamerfont{title}{family=\rmfamily}
+\setbeamerfont{frametitle}{family=\rmfamily}
+
+% 常用功能包
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{ragged2e}
+
+\graphicspath{{image/}}
+
+% 主题与样式设置
+\usetheme{Berlin}
+\setbeamertemplate{frametitle}[default][center]
+
+% ========= 论文正式信息 =========
+\title{基于改进A*算法与自适应权重MPC的\\水面无人艇路径规划研究}
+\author{龚家和}
+\institute{安徽大学·纽约石溪学院\\应用统计学\\本科毕业论文答辩}
+\date{2025年5月9日}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\input{Introduction}
+\input{BackgroundIntro}
+\input{frame.tex}
+\input{MD-Astar.tex}
+\input{AN-MPC.tex}
+\input{Strategy_switch.tex}
+\input{Simulation_and_Verification.tex}
+\input{Summary_Prospect.tex}
+\end{document}

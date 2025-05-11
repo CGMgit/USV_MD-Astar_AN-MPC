@@ -1,0 +1,173 @@
+\section{AN-MPC 轨迹控制策略}
+
+% === 第1页：AN-MPC方法的理论设计概述 ===
+\begin{frame}{AN-MPC 控制理论基础与设计概述}
+    \justifying
+    为提升 USV 在复杂扰动环境下的局部轨迹优化能力，本文基于简化 Fossen 模型构建 AN-MPC 控制器，通过滚动优化与动态权重机制实现路径跟踪的稳健性与自适应控制。
+    
+    \vspace{0.6em}
+    USV 离散时间状态空间模型为：
+    \[
+    \boldsymbol{x}(k+1) = f(\boldsymbol{x}(k), \boldsymbol{u}(k)) + \boldsymbol{w}(k)
+    \]
+    其中：
+    \begin{itemize}
+        \item $\boldsymbol{x}(k) = [X, Y, \theta, u, v, \omega]^T$ 为状态向量；
+        \item $\boldsymbol{u}(k) = [T_{\text{thrust}}, T_{\text{lateral}}, \tau_{\text{yaw}}]^T$ 为控制输入；
+        \item $\boldsymbol{w}(k)$ 表示水流扰动。
+    \end{itemize}
+    状态预测采用数值积分，考虑扰动叠加。
+\end{frame}
+
+% === 第2页：直观思想演示图 ===
+\begin{frame}[plain]{直观思想演示图2}
+  \begin{center}
+    \includegraphics[height=0.7\textwidth]{Image/AN-MPC思想演示图.png}
+    \captionof{figure}{2 AN-MPC 轨迹优化思想演示图}
+  \end{center}
+\end{frame}
+
+% === 第3页：USV 简化动力学建模框架 ===
+\begin{frame}{USV 简化动力学建模框架}
+\justifying
+为实现 AN-MPC 控制器在工程上的可部署性，本文在 Fossen 水动力学模型基础上，进行如下简化处理：
+\begin{itemize}
+    \item 假设惯性矩阵为对角形式；
+    \item 阻尼项采用线性速度相关模型；
+    \item 外部扰动建模为定速定向的水流矢量；
+\end{itemize}
+
+\vspace{0.5em}
+简化后的动力学主方程为：
+\[
+\boldsymbol{M}\nu + \boldsymbol{C}(\nu)\nu + \boldsymbol{D}(\nu')\nu' = \boldsymbol{\tau}
+\]
+其中：
+\begin{itemize}
+    \item $\nu = [u, v, \omega]^T$ 为船体速度向量；
+    \item $\boldsymbol{\tau} = [T_{\text{thrust}}, T_{\text{lateral}}, \tau_{\text{yaw}}]^T$ 为控制输入；
+    \item $\nu' = \nu - \nu_{\text{current}}^{\text{body}}$ 表示相对于水流的扰动速度。
+\end{itemize}
+\end{frame}
+
+% === 第4页：水流扰动建模与姿态运动学 ===
+\begin{frame}{水流扰动建模与姿态运动学}
+\scriptsize
+\justifying
+水流速度在全局坐标系中为：
+\[
+\nu_{\text{current}}^{\text{global}} = 
+\begin{bmatrix}
+V \cos \psi \\ V \sin \psi \\ 0
+\end{bmatrix}, \quad
+\nu_{\text{current}}^{\text{body}} = R(\theta)^T \nu_{\text{current}}^{\text{global}}
+\]
+
+\vspace{0.5em}
+三大动力学矩阵定义如下：
+\[
+\boldsymbol{M} =
+\begin{bmatrix}
+m & 0 & 0 \\
+0 & m & 0 \\
+0 & 0 & I_z
+\end{bmatrix}, \quad
+\boldsymbol{C}(\nu) =
+\begin{bmatrix}
+0 & 0 & -mv \\
+0 & 0 & mu \\
+mv & -mu & 0
+\end{bmatrix}, \quad
+\boldsymbol{D}(\nu') =
+\begin{bmatrix}
+D_u & 0 & 0 \\
+0 & D_v & 0 \\
+0 & 0 & D_\omega
+\end{bmatrix}
+\]
+
+\vspace{0.5em}
+USV 姿态变化由运动学方程描述：
+\[
+\begin{bmatrix}
+\dot{X} \\ \dot{Y} \\ \dot{\theta}
+\end{bmatrix}
+= R(\theta)
+\begin{bmatrix} u \\ v \\ \omega \end{bmatrix}
+\quad \Rightarrow \quad
+\nu_{\text{net}} = \nu_{\text{still}} + \nu_{\text{current}}^{\text{global}}
+\]
+\end{frame}
+
+% === 第5页：AN-MPC控制目标函数与约束建模 ===
+\begin{frame}{AN-MPC 控制目标函数与约束建模}
+\justifying
+每个控制周期内，AN-MPC 控制器求解如下优化问题：
+\[
+\min_{\boldsymbol{u}(0),\dots,\boldsymbol{u}(N-1)} \sum_{k=0}^{N-1} \left( (\boldsymbol{x}(k) - \boldsymbol{x}_{\text{ref}}(k))^T Q(k)(\boldsymbol{x}(k) - \boldsymbol{x}_{\text{ref}}(k)) + \boldsymbol{u}(k)^T R \boldsymbol{u}(k) \right)
+\]
+其中：
+\begin{itemize}
+    \item $Q(k)$ 和 $R$ 为状态误差与控制能耗的权重矩阵；
+    \item $N$ 为预测时域长度，$\boldsymbol{x}_{\text{ref}}(k)$ 为参考轨迹；
+    \item $Q(k)$ 动态变化，$R$ 为固定矩阵。
+\end{itemize}
+\end{frame}
+
+% === 第6页：AN-MPC 多目标代价函数设计 ===
+\begin{frame}{AN-MPC 多目标代价函数设计}
+\justifying
+优化目标函数由多个子目标代价组成：
+\[
+J = J_{\text{error}} + \lambda_1 J_{\text{energy}} + \lambda_2 J_{\text{speed}} + \lambda_3 J_{\text{curvature}} + \lambda_4 J_{\text{current}} + J_{\text{restricted}}
+\]
+
+各子目标定义如下：
+\begin{itemize}
+    \item 轨迹误差项：$J_{\text{error}} = \sum_k (\boldsymbol{x}_k - \boldsymbol{x}_{\text{ref},k})^T Q (\boldsymbol{x}_k - \boldsymbol{x}_{\text{ref},k})$
+    \item 能耗项：$J_{\text{energy}} = \sum_k \boldsymbol{u}_k^T R \boldsymbol{u}_k$
+    \item 速度平稳性项：$J_{\text{speed}} = \sum_k \left( (u_k - u_0)^2 + (v_k - v_0)^2 \right)$
+\end{itemize}
+\end{frame}
+
+% === 第7页：AN-MPC 其他代价与补偿项设计 ===
+\begin{frame}{AN-MPC 其他代价与补偿项设计}
+\justifying
+\begin{itemize}
+    \item 曲率平滑项：$J_{\text{curvature}} = \sum_k (\theta_{k+1} - \theta_k)^2$
+    \item 水流补偿项：
+    \[
+    J_{\text{current}} = \sum_k (V_{\text{current}} \cos \psi \cdot e_x(k) + V_{\text{current}} \sin \psi \cdot e_y(k))^2
+    \]
+    \item 禁区惩罚项：$J_{\text{restricted}} = \lambda_5$，若路径进入禁区，否则为 0
+\end{itemize}
+\end{frame}
+
+% === 第8页：控制输入约束条件 ===
+\begin{frame}{控制输入约束条件}
+\justifying
+控制输入施加如下约束，确保系统稳定与安全性：
+\[
+\begin{aligned}
+T_{\text{thrust,min}} \leq T_{\text{thrust}}(k) &\leq T_{\text{thrust,max}} \\
+T_{\text{lateral,min}} \leq T_{\text{lateral}}(k) &\leq T_{\text{lateral,max}} \\
+\tau_{\text{yaw,min}} \leq \tau_{\text{yaw}}(k) &\leq \tau_{\text{yaw,max}}
+\end{aligned}
+\]
+\end{frame}
+
+% === 第9页：状态误差权重矩阵 Q(k) 的动态调整机制 ===
+\begin{frame}{状态误差权重矩阵 Q(k) 的动态调整机制}
+\justifying
+每周期根据当前速度状态动态调整误差矩阵 $Q(k)$：
+\[
+Q(k) = \text{diag} \left(1 + \alpha(u^2 + v^2), 1 + \beta(u^2 + v^2), \frac{1}{1 + \gamma(u^2 + v^2)}, 1, 1, 1 \right)
+\]
+调整逻辑：
+\begin{itemize}
+    \item $X,Y$ 方向误差惩罚随速度增大加强；
+    \item 航向角误差惩罚随速度增大减弱；
+    \item $u,v,\omega$ 权重固定，用于保障稳定性。
+\end{itemize}
+该机制提升了高速状态下的位置控制精度与低速下的航向灵活性。
+\end{frame}

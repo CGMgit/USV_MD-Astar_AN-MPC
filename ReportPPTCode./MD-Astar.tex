@@ -1,0 +1,55 @@
+\section{MD-A* 路径规划方法}
+
+% 第一页：方法概述
+\begin{frame}{方法概述：改进型 A* 算法（MD-A*）}
+    \justifying
+    针对传统 A* 算法在水域路径规划中存在路径保守、贴边性差的问题，本文提出融合几何启发式与边界偏好估计的改进方法。
+
+    \vspace{0.8em}
+    本研究构建的 \textbf{MD-A*（Modified Distance A*）} 算法在连边建模中引入“绕行代价”和“穿越长度补偿”两类路径代价因素，同时在启发式函数中融入边界结构感知机制，在保持启发式搜索最优性的前提下，引导路径搜索更贴近可行区域边界。
+
+    \vspace{0.5em}
+    方法适用于障碍密集、水道不规则等海港场景，具备良好的工程解释性与可行性。
+\end{frame}
+
+% 第二页：直观思想演示图
+\begin{frame}[plain]{直观思想演示图1}
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{Image/MD-Astar思想演示图.png}
+    \captionof{figure}{1 “类贴边性”直观思想对比示意图}
+  \end{center}
+\end{frame}
+
+
+% 第三页：权重建模
+\begin{frame}{权重建模：融合绕行代价与穿越补偿机制}
+    \justifying
+    综合考虑欧几里得距离、绕行代价及穿越补偿，定义连边 $(P_i, P_j)$ 的权重为：
+    \[
+    \text{weight}(P_i, P_j) = d_{\text{euclid}}(P_i, P_j) + \lambda d_{\text{绕行}}(P_i, P_j) - \mu d_{\text{穿越}}(P_i, P_j)
+    \]
+    其中：
+    \begin{itemize}
+      \item $d_{\text{euclid}}$：欧几里得距离；
+      \item $d_{\text{绕行}}$：对绕开障碍最小路径的估算；
+      \item $d_{\text{穿越}}$：连线实际穿越障碍物的长度；
+      \item $\lambda \geq \mu \geq 1$：分别为绕行代价与穿越补偿的权重。
+    \end{itemize}
+    特别地，当边未穿越任何障碍时，$d_{\text{绕行}} = d_{\text{穿越}} = 0$，退化为欧几里得权重。
+\end{frame}
+
+% 第四页：启发式函数设计与贴边性引导
+\begin{frame}{启发式函数设计与贴边性引导}
+    \justifying
+    为在路径搜索中兼顾启发效率与路径合理性，本文对传统 A* 启发函数进行设计改进：
+    \[
+    h(n) = d_{\text{euclid}}(n, t) + \min_{(n,m)\in E} \left( d_{\text{绕行}}(n,m) - d_{\text{穿越}}(n,m) \right)
+    \]
+    其中，第一项衡量当前节点与目标点的基础距离，第二项表达与边界之间的贴边偏好估计。
+
+    \vspace{0.5em}
+    \textbf{可接受性}：$h(n)$ 不高估真实代价；
+    \textbf{一致性}：满足 $h(n) \leq c(n,m) + h(m)$，确保 A* 的收敛性与最优性。
+\end{frame}
+
+

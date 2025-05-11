@@ -1,0 +1,73 @@
+\section{展望：策略切换机制}
+
+% 第一页：动态避障机制设计概述
+\begin{frame}{动态障碍物避障机制设计概述}
+\justifying
+在复杂动态海洋环境中，水面无人艇（USV）经常面临其他船只、漂浮物等动态障碍物干扰。为提升系统在动态环境下的航行安全性与适应能力，本文提出一种结合\textbf{行为识别}与\textbf{策略切换}机制的动态避障方法，并嵌入于整体三层控制架构中。
+
+\vspace{0.5em}
+该方法支持智能体根据障碍物运动特性自动选择避障策略：\textbf{可预测运动}使用基于物理建模的轨迹预测与规避方法；\textbf{不可预测运动}则启用深度强化学习（DRL）模块，实现自适应避障与路径优化。
+\end{frame}
+
+% 第二页：直观思想演示图
+\begin{frame}[plain]{直观思想演示图3}
+\begin{center}
+    \includegraphics[height=0.7\textwidth]{Image/策略切换演示图.png}
+    \captionof{figure}{3 动态避障策略切换思想演示图}
+\end{center}
+\end{frame}
+
+% 第三页：行为识别与策略切换机制
+\begin{frame}{行为识别与策略切换机制}
+\justifying
+为判断障碍物是否符合固定方向均匀加速模型，系统使用如下二阶差分指标：
+\[
+\Delta V = \frac{V_{t+1} - V_t}{\Delta t}, \quad \Delta\theta = \frac{\theta_{t+1} - \theta_t}{\Delta t}
+\]
+当 $|\Delta V|$ 与 $|\Delta\theta|$ 同时低于阈值，认为该障碍物运动可预测，选择物理预测策略；否则启用深度强化学习模块。
+\end{frame}
+
+% 第四页：可预测运动下的物理建模策略
+\begin{frame}{可预测运动下的物理建模策略}
+\justifying
+对于判定为可预测的障碍物，其未来轨迹可通过牛顿运动模型近似计算。障碍物在 USV 船体坐标系下的速度与加速度变换为：
+\[
+\mathbf{V}_b = R(\theta)^T \cdot \mathbf{V}_g, \quad \mathbf{a}_b = R(\theta)^T \cdot \mathbf{a}_g
+\]
+其中 $R(\theta)$ 为从全局坐标系到船体坐标系的旋转矩阵。
+
+未来位置预测公式：
+\[
+p_{\text{obs}}(t + \Delta t) = p_{\text{obs}}(t) + \mathbf{V}_b \cdot \Delta t + \frac{1}{2} \mathbf{a}_b (\Delta t)^2
+\]
+该方法计算负担轻，适用于短时域规避。
+\end{frame}
+
+% 第无页：不可预测运动下的强化学习策略
+\begin{frame}{不可预测运动下的强化学习策略}
+\justifying
+若障碍物运动不符合物理模型，USV 启用基于深度强化学习（DRL）的智能避障模块。通过与环境交互，智能体学习最优行为策略以应对高动态性。
+
+奖励函数设计考虑以下目标：
+\begin{itemize}
+    \item 成功避障率（避免碰撞）；
+    \item 控制能耗（惩罚推力波动）；
+    \item 航迹平滑性（抑制角速度抖动）；
+    \item 任务完成时间（提高效率）。
+\end{itemize}
+强化学习模型使用深度神经网络，以状态为输入，输出动作策略。
+\end{frame}
+
+% 第六页：避障策略分层结构
+\begin{frame}{避障策略的分层控制结构}
+\justifying
+整个动态避障系统采用三层结构：
+\begin{itemize}
+    \item \textbf{顶层（行为识别模块）}：实时判断障碍物运动模式；
+    \item \textbf{中层（策略切换器）}：根据判断结果选择“物理建模”或“强化学习”路径；
+    \item \textbf{底层（控制执行器）}：生成控制指令，调整航向与速度。
+\end{itemize}
+该架构在兼顾低计算开销与高复杂性适应能力之间实现平衡。
+\end{frame}
+
+
